@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  nix:
+    image: nixos/nix
+    entrypoint: [ "/root/.nix-profile/bin/nix", "--extra-experimental-features", "nix-command", "--extra-experimental-features", "flakes" ]
+    working_dir: /workdir
+    volumes:
+      - ./.:/workdir
