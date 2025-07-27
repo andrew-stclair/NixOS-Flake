@@ -5,6 +5,7 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:bookworm",
 	"features": {
+		"git-lfs": "latest",
 		"ghcr.io/devcontainers/features/nix:1": {
 			"multiUser": true,
 			"version": "latest"
