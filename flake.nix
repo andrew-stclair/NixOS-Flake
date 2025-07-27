@@ -14,6 +14,7 @@
       nixos-flake = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
+          ./hardware/nixos-flake.nix
           ./modules/base.nix
           ./modules/gnome.nix
           ./modules/latest-kernel.nix
