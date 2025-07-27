@@ -1,6 +1,19 @@
 { config, pkgs, ... }@args:
 
+# Conditionally import hardware-configuration.nix or provide a dummy for flake checks
+let
+  hardwareConfig = if builtins.pathExists "./hardware-configuration.nix"
+    then import ./hardware-configuration.nix args
+    else {
+      fileSystems."/" = {
+        device = "none";
+        fsType = "tmpfs";
+        options = [ "defaults" ];
+      };
+    };
+in
 {
+  imports = [ hardwareConfig ];
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

@@ -7,7 +7,7 @@ A NixOS Flake
 To use this flake, you can run the following command:
 
 ```bash
-sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake
+sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake --impure
 ```
 
 ## Sources
