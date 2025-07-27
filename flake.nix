@@ -16,7 +16,7 @@
         modules = [
           ./hosts/nixos-flake.nix
           ./modules/base.nix
-          ./modules/gnome.nix
+          ./modules/plasma.nix
           ./modules/latest-kernel.nix
           home-manager.nixosModules.home-manager
         ];
