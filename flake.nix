@@ -1,53 +1,32 @@
-# flake.nix
 {
+  description = "A very basic flake";
+
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # ...
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+
+    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
-  outputs = { self, nixpkgs, home-manager }:
-    let 
-      # ...
-    in {
-      # ...
-      nixosConfigurations = {
-        nixos = {
-          system = "x86_64-linux";
-          modules = with self.nixosModules; [
-            ({ config = { nix.registry.nixpkgs.flake = nixpkgs; }; })
-            # ...
-            home-manager.nixosModules.home-manager
-            gnome
-            declarativeHome
-            users-andrew
-          ];
-        };
-        # ...
-      };
-      nixosModules = {
-        gnome = { pkgs, ... }: {
-          config = {
-            services.xserver.enable = true;
-            services.xserver.displayManager.gdm.enable = true;
-            services.xserver.desktopManager.gnome.enable = true;
-            programs.dconf.enable = true;
-            environment.systemPackages = with pkgs; [
-              gnome.gnome-tweaks
-            ];
-          };
-        };
-        # ...
-        declarativeHome = { ... }: {
-          config = {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          };
-        };
-        users-andrew = ./users/andrew;
+
+  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager }: {
+    nixosConfigurations = {
+      nixos-flake = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./modules/gnome.nix
+          ./modules/latest-kernel.nix
+          home-manager.nixosModules.home-manager
+        ];
+        specialArgs = { inherit self; };
       };
     };
-  # ...
+
+    # homeConfigurations = {
+    #   andrew = home-manager.lib.homeManagerConfiguration {
+    #     pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    #     modules = [ ./home.nix ];
+    #   };
+    # };
+  };
 }
