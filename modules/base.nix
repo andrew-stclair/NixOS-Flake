@@ -2,8 +2,8 @@
 
 # Conditionally import hardware-configuration.nix or provide a dummy for flake checks
 let
-  hardwareConfig = if builtins.pathExists "./hardware-configuration.nix"
-    then import ./hardware-configuration.nix args
+  hardwareConfig = if builtins.pathExists "/etc/nixos/hardware-configuration.nix"
+    then import /etc/nixos/hardware-configuration.nix args
     else {
       fileSystems."/" = {
         device = "none";
