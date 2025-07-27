@@ -11,6 +11,17 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager }: {
     nixosConfigurations = {
+      nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hosts/nixos.nix
+          ./modules/base.nix
+          ./modules/gnome.nix
+          ./modules/latest-kernel.nix
+          home-manager.nixosModules.home-manager
+        ];
+        specialArgs = { inherit self; };
+      };
       nixos-flake = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
