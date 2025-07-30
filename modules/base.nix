@@ -71,7 +71,9 @@ in
     isNormalUser = true;
     description = "Andrew St Clair";
     extraGroups = [ "networkmanager" "wheel" ];
+    shell = pkgs.zsh;
     packages = with pkgs; [
+      zsh
     #  thunderbird
     ];
   };
