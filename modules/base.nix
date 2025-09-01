@@ -72,6 +72,7 @@ in
     description = "Andrew St Clair";
     extraGroups = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
+    ignoreShellProgramCheck = true; # Defined in home/andrew.nix
     packages = with pkgs; [
       zsh
     #  thunderbird
