@@ -6,11 +6,18 @@ let
 
   userModulePath = userName: ../../home/users + "/${userName}.nix";
 
+  # Optional display name (GECOS) for known users.
+  userDescriptions = {
+    andrew = "Andrew St Clair";
+    matt = "Matt Vermeer";
+  };
+
   mkUserAccount = userName: {
     name = userName;
     value = {
       isNormalUser = true;
-      extraGroups = [ "wheel", "networkmanager" ];
+      description = userDescriptions.${userName} or "";
+      extraGroups = [ "wheel" "networkmanager" ];
       initialPassword = "nixos";
     };
   };

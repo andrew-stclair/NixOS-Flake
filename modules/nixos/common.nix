@@ -4,6 +4,7 @@ let
   localHardwareModule = "/etc/nixos/hardware-configuration.nix";
 in
 {
+  imports = [ ./system-update.nix ];
   warnings = lib.optional (!(builtins.pathExists localHardwareModule)) ''
     Local hardware config was not imported: ${localHardwareModule}
 

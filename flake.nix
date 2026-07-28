@@ -46,13 +46,13 @@
         minimal-kde = mkHost {
           hostName = "minimal-kde";
           role = ./modules/nixos/roles/desktop-plasma.nix;
-          users = [ "example" ];
+          users = [ "example" "andrew" "matt" ];
         };
 
         headless-server = mkHost {
           hostName = "headless-server";
           role = ./modules/nixos/roles/headless-server.nix;
-          users = [ "example" ];
+          users = [ "example" "andrew" "matt" ];
         };
       };
 
@@ -61,12 +61,22 @@
           inherit pkgs;
           modules = [ ./home/users/example.nix ];
         };
+        "andrew@minimal-kde" = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./home/users/andrew.nix ];
+        };
+        "matt@minimal-kde" = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./home/users/matt.nix ];
+        };
       };
 
       checks.${system} = {
         minimal-kde = self.nixosConfigurations.minimal-kde.config.system.build.toplevel;
         headless-server = self.nixosConfigurations.headless-server.config.system.build.toplevel;
         example-home = self.homeConfigurations."example@minimal-kde".activationPackage;
+        andrew-home = self.homeConfigurations."andrew@minimal-kde".activationPackage;
+        matt-home = self.homeConfigurations."matt@minimal-kde".activationPackage;
       };
 
       formatter.${system} = pkgs.nixfmt-rfc-style;
