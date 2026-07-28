@@ -10,7 +10,7 @@ let
     name = userName;
     value = {
       isNormalUser = true;
-      extraGroups = [ "wheel" ];
+      extraGroups = [ "wheel", "networkmanager" ];
       initialPassword = "nixos";
     };
   };
