@@ -69,7 +69,25 @@ They are defined in `flake.nix` and implemented in `hosts/` + `modules/nixos/rol
 
 ## Usage
 
-Switch the local machine to one of the example host configs:
+If needed (for example on fresh installs), start a shell with `git` available:
+
+```bash
+nix shell nixpkgs#git
+```
+
+Use this flake directly from GitHub (no local clone required):
+
+```bash
+sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#minimal-kde --impure
+```
+
+or
+
+```bash
+sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#headless-server --impure
+```
+
+Switch the local machine using a local checkout:
 
 ```bash
 sudo nixos-rebuild switch --flake .#minimal-kde --impure
