@@ -11,7 +11,7 @@ let
     value = {
       isNormalUser = true;
       extraGroups = [ "wheel" ];
-      initialPassword = lib.mkIf (userName == "example") "example";
+      initialPassword = "nixos";
     };
   };
 
