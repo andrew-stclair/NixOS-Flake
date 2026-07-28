@@ -1,45 +1,82 @@
 {
-  description = "A very basic flake";
+  description = "NixOS Flake with shared modules, host profiles, and Home Manager users";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    home-manager.url = "github:nix-community/home-manager/release-25.05";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-  };
-
-  outputs = { self, nixpkgs, nixpkgs-unstable, home-manager }: {
-    nixosConfigurations = {
-      nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./hosts/nixos.nix
-          ./modules/base.nix
-          ./modules/gnome.nix
-          ./modules/latest-kernel.nix
-          home-manager.nixosModules.home-manager
-        ];
-        specialArgs = { inherit self; };
-      };
-      nixos-flake = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./hosts/nixos-flake.nix
-          ./modules/base.nix
-          ./modules/plasma.nix
-          ./modules/latest-kernel.nix
-          home-manager.nixosModules.home-manager
-        ];
-        specialArgs = { inherit self; };
-      };
-    };
-
-    homeConfigurations = {
-      andrew = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        modules = [ ./home/andrew.nix ];
-      };
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
+
+  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+    let
+      lib = nixpkgs.lib;
+      system = "x86_64-linux";
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+
+      mkHost = {
+        hostName,
+        role,
+        users ? [ ],
+        extraModules ? [ ],
+      }:
+        lib.nixosSystem {
+          inherit system;
+          specialArgs = { inherit inputs self; };
+          modules = [
+            home-manager.nixosModules.home-manager
+            ./modules/nixos/common.nix
+            ./modules/nixos/users-home-manager.nix
+            role
+            ({ ... }: {
+              networking.hostName = hostName;
+              profiles.users = users;
+            })
+            ./hosts/${hostName}
+          ] ++ extraModules;
+        };
+    in
+    {
+      nixosConfigurations = {
+        minimal-kde = mkHost {
+          hostName = "minimal-kde";
+          role = ./modules/nixos/roles/desktop-plasma.nix;
+          users = [ "example" ];
+        };
+
+        headless-server = mkHost {
+          hostName = "headless-server";
+          role = ./modules/nixos/roles/headless-server.nix;
+          users = [ "example" ];
+        };
+      };
+
+      homeConfigurations = {
+        "example@minimal-kde" = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          modules = [ ./home/users/example.nix ];
+        };
+      };
+
+      checks.${system} = {
+        minimal-kde = self.nixosConfigurations.minimal-kde.config.system.build.toplevel;
+        headless-server = self.nixosConfigurations.headless-server.config.system.build.toplevel;
+        example-home = self.homeConfigurations."example@minimal-kde".activationPackage;
+      };
+
+      formatter.${system} = pkgs.nixfmt-rfc-style;
+
+      devShells.${system}.default = pkgs.mkShell {
+        packages = with pkgs; [
+          nil
+          nixd
+          nixfmt-rfc-style
+        ];
+      };
+    };
 }

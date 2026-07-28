@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  flake-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Enable Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Flake checks
+        run: nix --extra-experimental-features "nix-command flakes" flake check --print-build-logs
+
+      - name: Evaluate host build derivations
+        run: |
+          nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.minimal-kde.config.system.build.toplevel.drvPath
+          nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.headless-server.config.system.build.toplevel.drvPath
+
+      - name: Evaluate Home Manager derivation
+        run: nix --extra-experimental-features "nix-command flakes" eval .#homeConfigurations.example@minimal-kde.activationPackage.drvPath
