@@ -27,7 +27,7 @@
       }:
         lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs self; };
+          specialArgs = { inherit inputs self; userList = users; };
           modules = [
             home-manager.nixosModules.home-manager
             ./modules/nixos/common.nix
@@ -35,7 +35,6 @@
             role
             ({ ... }: {
               networking.hostName = hostName;
-              profiles.users = users;
             })
             ./hosts/${hostName}
           ] ++ extraModules;
@@ -56,27 +55,9 @@
         };
       };
 
-      homeConfigurations = {
-        "example@minimal-kde" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [ ./home/users/example.nix ];
-        };
-        "andrew@minimal-kde" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [ ./home/users/andrew.nix ];
-        };
-        "matt@minimal-kde" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [ ./home/users/matt.nix ];
-        };
-      };
-
       checks.${system} = {
         minimal-kde = self.nixosConfigurations.minimal-kde.config.system.build.toplevel;
         headless-server = self.nixosConfigurations.headless-server.config.system.build.toplevel;
-        example-home = self.homeConfigurations."example@minimal-kde".activationPackage;
-        andrew-home = self.homeConfigurations."andrew@minimal-kde".activationPackage;
-        matt-home = self.homeConfigurations."matt@minimal-kde".activationPackage;
       };
 
       formatter.${system} = pkgs.nixfmt-rfc-style;

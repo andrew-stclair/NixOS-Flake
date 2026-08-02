@@ -1,15 +1,23 @@
 { pkgs, ... }:
 
 {
-  imports = [ ../profiles/base.nix ];
+  users.users.example = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "networkmanager" ];
+    initialPassword = "nixos";
+  };
 
-  home.username = "example";
-  home.homeDirectory = "/home/example";
+  home-manager.users.example = {
+    imports = [ ../profiles/base.nix ];
 
-  home.packages = with pkgs; [
-    bat
-    eza
-    fd
-    ripgrep
-  ];
+    home.username = "example";
+    home.homeDirectory = "/home/example";
+
+    home.packages = with pkgs; [
+      bat
+      eza
+      fd
+      ripgrep
+    ];
+  };
 }
