@@ -41,6 +41,9 @@
         };
     in
     {
+      # Home Manager is integrated via NixOS modules (home-manager.nixosModules.home-manager)
+      # rather than as standalone homeConfigurations. Each host's users are configured through
+      # the users-home-manager module which sets up home-manager.users.* within the NixOS system.
       nixosConfigurations = {
         minimal-kde = mkHost {
           hostName = "minimal-kde";

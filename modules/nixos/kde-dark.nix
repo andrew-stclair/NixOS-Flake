@@ -13,5 +13,5 @@
   '';
 
   # Set SDDM (login screen) to use the Breeze Dark theme.
-  services.displayManager.sddm.theme = "breeze";
+  services.displayManager.sddm.theme = "breeze-dark";
 }

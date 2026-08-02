@@ -5,6 +5,11 @@
     (pkgs.writeShellScriptBin "system-update" ''
       set -euo pipefail
 
+      if [ "$(id -u)" -ne 0 ]; then
+        echo "Error: This script must be run as root (e.g., via sudo)." >&2
+        exit 1
+      fi
+
       FLAKE_DIR="/etc/nixos"
       HOST="$(hostname)"
 
