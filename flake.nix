@@ -27,7 +27,7 @@
       }:
         lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs self; };
+          specialArgs = { inherit inputs self; userList = users; };
           modules = [
             home-manager.nixosModules.home-manager
             ./modules/nixos/common.nix
@@ -35,38 +35,32 @@
             role
             ({ ... }: {
               networking.hostName = hostName;
-              profiles.users = users;
             })
             ./hosts/${hostName}
           ] ++ extraModules;
         };
     in
     {
+      # Home Manager is integrated via NixOS modules (home-manager.nixosModules.home-manager)
+      # rather than as standalone homeConfigurations. Each host's users are configured through
+      # the users-home-manager module which sets up home-manager.users.* within the NixOS system.
       nixosConfigurations = {
         minimal-kde = mkHost {
           hostName = "minimal-kde";
           role = ./modules/nixos/roles/desktop-plasma.nix;
-          users = [ "example" ];
+          users = [ "example" "andrew" "matt" ];
         };
 
         headless-server = mkHost {
           hostName = "headless-server";
           role = ./modules/nixos/roles/headless-server.nix;
-          users = [ "example" ];
-        };
-      };
-
-      homeConfigurations = {
-        "example@minimal-kde" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          modules = [ ./home/users/example.nix ];
+          users = [ "example" "andrew" "matt" ];
         };
       };
 
       checks.${system} = {
         minimal-kde = self.nixosConfigurations.minimal-kde.config.system.build.toplevel;
         headless-server = self.nixosConfigurations.headless-server.config.system.build.toplevel;
-        example-home = self.homeConfigurations."example@minimal-kde".activationPackage;
       };
 
       formatter.${system} = pkgs.nixfmt-rfc-style;

@@ -26,6 +26,3 @@ jobs:
         run: |
           nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.minimal-kde.config.system.build.toplevel.drvPath
           nix --extra-experimental-features "nix-command flakes" eval .#nixosConfigurations.headless-server.config.system.build.toplevel.drvPath
-
-      - name: Evaluate Home Manager derivation
-        run: nix --extra-experimental-features "nix-command flakes" eval .#homeConfigurations.example@minimal-kde.activationPackage.drvPath

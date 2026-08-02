@@ -1,46 +1,20 @@
-{ config, lib, ... }:
+{ lib, userList ? [ ], ... }:
 
 let
-  inherit (lib) mkOption types;
-  cfg = config.profiles;
-
   userModulePath = userName: ../../home/users + "/${userName}.nix";
-
-  mkUserAccount = userName: {
-    name = userName;
-    value = {
-      isNormalUser = true;
-      extraGroups = [ "wheel", "networkmanager" ];
-      initialPassword = "nixos";
-    };
-  };
-
-  mkHomeManagerUser = userName: {
-    name = userName;
-    value = import (userModulePath userName);
-  };
+  existingUsers = lib.filter (u: builtins.pathExists (userModulePath u)) userList;
+  missingUsers = lib.filter (u: !(builtins.pathExists (userModulePath u))) userList;
 in
 {
-  options.profiles.users = mkOption {
-    type = types.listOf types.str;
-    default = [ ];
-    description = "User module names from home/users/*.nix to enable on this host.";
-  };
+  imports = map userModulePath existingUsers;
 
-  config = {
-    assertions = map
-      (userName: {
-        assertion = builtins.pathExists (userModulePath userName);
-        message = "Missing Home Manager user module: home/users/${userName}.nix";
-      })
-      cfg.users;
+  assertions = map (userName: {
+    assertion = false;
+    message = "User module file not found for '${userName}': expected at ${toString (userModulePath userName)}";
+  }) missingUsers;
 
-    users.users = builtins.listToAttrs (map mkUserAccount cfg.users);
-
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      users = builtins.listToAttrs (map mkHomeManagerUser cfg.users);
-    };
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
   };
 }
