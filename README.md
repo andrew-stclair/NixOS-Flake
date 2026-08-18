@@ -27,7 +27,9 @@ This repository is structured for multi-machine NixOS management with:
 ├── home/
 │   ├── profiles/base.nix
 │   └── users/example.nix
-└── scripts/pre-push-check.sh
+├── scripts/
+│   ├── pre-push-check.sh
+│   └── test-vm.sh
 ```
 
 ## Hardware Configuration Stays Local
@@ -103,8 +105,37 @@ Build without switching:
 
 ```bash
 nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.minimal-kde.config.system.build.toplevel
-nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.headless-server.config.system.build.toplevel
 ```
+
+## Testing Configurations in QEMU VM
+
+Use `scripts/test-vm.sh` to test-boot any host configuration defined in `flake.nix` inside a QEMU Virtual Machine:
+
+List available configurations:
+
+```bash
+./scripts/test-vm.sh --list
+```
+
+Boot a desktop host in QEMU:
+
+```bash
+./scripts/test-vm.sh minimal-kde
+```
+
+Boot a server host in headless mode:
+
+```bash
+./scripts/test-vm.sh headless-server --headless
+```
+
+Build the QEMU runner script without launching QEMU:
+
+```bash
+./scripts/test-vm.sh minimal-kde --build-only
+```
+
+Note: `scripts/test-vm.sh` uses `--impure` by default so local hardware configuration (`/etc/nixos/hardware-configuration.nix`) is safely imported if present.
 
 ## Local Validation Before Pushing
 
