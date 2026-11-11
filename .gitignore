@@ -1,3 +1,10 @@
-# Optional local-only modules/imports.
+# Build results
+result
+result-*
+
+# Flake / direnv
+.direnv/
+
+# Local-only custom modules / overrides
 *.local.nix
 local/

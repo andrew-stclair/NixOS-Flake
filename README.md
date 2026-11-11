@@ -1,165 +1,107 @@
-# NixOS Flake
+# NixOS Multi-Host Flake Architecture
 
-This repository is structured for multi-machine NixOS management with:
+This repository implements a multi-host, multi-user NixOS configuration using a GitHub repository as the source of truth, backed by automated CI testing via GitHub Actions.
 
-- Shared system defaults in one central place
-- Host-specific machine configuration per host
-- Home Manager user profiles per user
-- Host-to-user wiring so a host can enable one or many users
-- CI and automated lockfile updates
-- Local-only hardware configuration support
-
-## Layout
+## Directory Layout
 
 ```text
 .
-├── flake.nix
-├── modules/
-│   └── nixos/
-│       ├── common.nix
-│       ├── users-home-manager.nix
-│       └── roles/
-│           ├── desktop-plasma.nix
-│           └── headless-server.nix
+├── .github/
+│   └── workflows/
+│       └── nixos-ci.yml            # CI pipeline config
+├── flake.nix                       # Central entry point
 ├── hosts/
-│   ├── minimal-kde/default.nix
-│   └── headless-server/default.nix
-├── home/
-│   ├── profiles/base.nix
-│   └── users/example.nix
-├── scripts/
-│   ├── pre-push-check.sh
-│   └── test-vm.sh
+│   ├── desktop/
+│   │   ├── configuration.nix       # Desktop-specific system config
+│   │   └── hardware-configuration.nix
+│   └── server/
+│       ├── configuration.nix       # Server-specific system config
+│       └── hardware-configuration.nix
+├── modules/
+│   ├── core/                       # Configurations applied to ALL hosts
+│   │   └── default.nix
+│   └── groups/                     # Shared optional logic
+│       ├── graphical.nix
+│       └── headless.nix
+└── users/
+    ├── alice/
+    │   └── home.nix                # Alice's Home Manager config
+    └── bob/
+        └── home.nix                # Bob's Home Manager config
 ```
 
-## Hardware Configuration Stays Local
+## Structure Overview
 
-Each host imports `/etc/nixos/hardware-configuration.nix` from the local machine.
+### 1. Central Flake Registry (`flake.nix`)
+Defines the NixOS configurations for all hosts using `nixpkgs` (unstable) and `home-manager`:
+- **`desktop`**: Includes core modules, graphical group (KDE Plasma 6 + Ly), and Home Manager users `alice` and `bob`.
+- **`server`**: Includes core modules, headless group (OpenSSH hardening, doc stripping), and Home Manager user `alice`.
 
-This means hardware config does not live in this repository.
+### 2. Core System Layer (`modules/core/default.nix`)
+Universal configuration applied to every host:
+- Experimental Nix features (`nix-command`, `flakes`) and automatic store optimisation.
+- Timezone (`Australia/Melbourne`) and locale (`en_AU.UTF-8`).
+- Global packages: `git`, `vim`, `curl`, `wget`, `htop`, `tmux`.
+- Sudo wheel configuration and system state version `24.11`.
 
-Generate or refresh it locally on each host:
+### 3. Group Configuration Overlays (`modules/groups/`)
+- **`graphical.nix`**: X11/Wayland support, Ly display manager, KDE Plasma 6 desktop environment, PipeWire sound server, and desktop applications (`firefox`, `alacritty`, `vlc`).
+- **`headless.nix`**: Hardened OpenSSH daemon (password auth and root login disabled) and stripped documentation.
+
+### 4. User Profiles (`users/`)
+Home Manager user configurations managing dotfiles, tools, and user environments:
+- **`alice/home.nix`**: Git configuration, bash aliases, and utilities (`ripgrep`, `fd`, `tree`).
+- **`bob/home.nix`**: Git configuration, bash aliases, and utilities (`ripgrep`, `fd`, `tree`).
+
+### 5. Host Profiles (`hosts/`)
+Each machine has its own directory containing:
+- `configuration.nix`: Machine-specific host name, user declarations, bootloader, and role imports.
+- `hardware-configuration.nix`: Filesystem declarations and platform settings (can be populated locally via `nixos-generate-config`).
+
+## Usage & Deployment
+
+### 1. Stage Local Changes
+Nix flakes only evaluate files tracked by Git:
 
 ```bash
-sudo nixos-generate-config --show-hardware-config > /etc/nixos/hardware-configuration.nix
+git add .
 ```
 
-Important: when rebuilding from this flake, use `--impure` so Nix can read local `/etc` content.
-
-If `/etc/nixos/hardware-configuration.nix` is missing (or not importable in a pure eval),
-the shared module emits a warning during evaluation with the fix command.
-
-## Central + Host + User Model
-
-- Shared configuration for all machines: `modules/nixos/common.nix`
-- Host role configuration: `modules/nixos/roles/*.nix`
-- Host overrides and machine specifics: `hosts/<host>/default.nix`
-- User profiles (Home Manager): `home/users/*.nix`
-
-Host-to-user mapping is done in `flake.nix` with the `users = [ ... ]` list per host.
-
-## Example Machines
-
-- Minimal KDE Plasma desktop: `minimal-kde`
-- Headless server: `headless-server`
-
-They are defined in `flake.nix` and implemented in `hosts/` + `modules/nixos/roles/`.
-
-## Example User
-
-`home/users/example.nix` imports `home/profiles/base.nix` and provides user-level packages and settings.
-
-## Usage
-
-If needed (for example on fresh installs), start a shell with `git` available:
+### 2. Rebuild / Switch System
+Deploy to the local machine directly from the local repository:
 
 ```bash
-nix shell nixpkgs#git
+# For a desktop machine
+sudo nixos-rebuild switch --flake .#desktop
+
+# For a server machine
+sudo nixos-rebuild switch --flake .#server
 ```
 
-Use this flake directly from GitHub (no local clone required):
+Deploy directly from GitHub:
 
 ```bash
-sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#minimal-kde --impure
+sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#desktop
+sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#server
 ```
 
-or
+### 3. Dry-Run Evaluation / Build
+To evaluate derivations without building the full operating system:
 
 ```bash
-sudo nixos-rebuild switch --flake github:andrew-stclair/NixOS-Flake#headless-server --impure
+nix eval .#nixosConfigurations.desktop.config.system.build.toplevel.drvPath
+nix eval .#nixosConfigurations.server.config.system.build.toplevel.drvPath
 ```
 
-Switch the local machine using a local checkout:
+To build a machine top-level derivation:
 
 ```bash
-sudo nixos-rebuild switch --flake .#minimal-kde --impure
+nix build .#nixosConfigurations.desktop.config.system.build.toplevel
 ```
 
-or
+## Continuous Integration
 
-```bash
-sudo nixos-rebuild switch --flake .#headless-server --impure
-```
-
-Build without switching:
-
-```bash
-nix --extra-experimental-features "nix-command flakes" build .#nixosConfigurations.minimal-kde.config.system.build.toplevel
-```
-
-## Testing Configurations in QEMU VM
-
-Use `scripts/test-vm.sh` to test-boot any host configuration defined in `flake.nix` inside a QEMU Virtual Machine:
-
-List available configurations:
-
-```bash
-./scripts/test-vm.sh --list
-```
-
-Boot a desktop host in QEMU:
-
-```bash
-./scripts/test-vm.sh minimal-kde
-```
-
-Boot a server host in headless mode:
-
-```bash
-./scripts/test-vm.sh headless-server --headless
-```
-
-Build the QEMU runner script without launching QEMU:
-
-```bash
-./scripts/test-vm.sh minimal-kde --build-only
-```
-
-Note: `scripts/test-vm.sh` uses `--impure` by default so local hardware configuration (`/etc/nixos/hardware-configuration.nix`) is safely imported if present.
-
-## Local Validation Before Pushing
-
-Run:
-
-```bash
-bash scripts/pre-push-check.sh
-```
-
-This runs:
-
-- `nix flake check`
-- Host derivation evaluation
-- Home Manager derivation evaluation
-
-## GitHub Automation
-
-- CI workflow: `.github/workflows/ci.yml`
-	- Runs on push/PR
-	- Executes `nix flake check`
-	- Evaluates host and Home Manager derivations
-
-- Lock update workflow: `.github/workflows/update-flake-lock.yml`
-	- Scheduled weekly and manually dispatchable
-	- Runs `nix flake update`
-	- Validates with `nix flake check`
-	- Opens a pull request with updated `flake.lock`
+GitHub Actions (`.github/workflows/nixos-ci.yml`) runs on push and pull requests targeting `main` and `master`:
+1. Validates flake structure (`nix flake check`).
+2. Evaluates the top-level derivation path for `desktop`.
+3. Evaluates the top-level derivation path for `server`.
