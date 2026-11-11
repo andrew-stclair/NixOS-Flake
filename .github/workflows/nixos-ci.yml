@@ -28,3 +28,4 @@ jobs:
     - name: dry-run Evaluation - Server Host
       run: |
         nix eval .#nixosConfigurations.server.config.system.build.toplevel.drvPath
+

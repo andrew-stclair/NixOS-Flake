@@ -105,3 +105,4 @@ GitHub Actions (`.github/workflows/nixos-ci.yml`) runs on push and pull requests
 1. Validates flake structure (`nix flake check`).
 2. Evaluates the top-level derivation path for `desktop`.
 3. Evaluates the top-level derivation path for `server`.
+

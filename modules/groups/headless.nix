@@ -14,3 +14,4 @@
   documentation.doc.enable = false;
   documentation.man.enable = true;
 }
+

@@ -8,3 +8,4 @@ result-*
 # Local-only custom modules / overrides
 *.local.nix
 local/
+
