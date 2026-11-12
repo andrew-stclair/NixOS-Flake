@@ -34,18 +34,18 @@
     enable = true;
     theme = {
       name = "Breeze-Dark";
-      package = pkgs.breeze-gtk;
+      package = null;
     };
     iconTheme = {
       name = "breeze-dark";
-      package = pkgs.breeze-icons;
+      package = null;
     };
   };
 
   qt = {
     enable = true;
     platformTheme.name = "kvantum";
-    style.name = "breeze";
+    style.name = "kvantum";
   };
 
   home.stateVersion = "26.05";
