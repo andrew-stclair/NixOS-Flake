@@ -23,6 +23,8 @@
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "bak";
+            home-manager.backupCommand = "rm";
             home-manager.users.alice = import ./users/alice/home.nix;
             home-manager.users.bob = import ./users/bob/home.nix;
           }
@@ -39,6 +41,8 @@
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "bak";
+            home-manager.backupCommand = "rm";
             home-manager.users.alice = import ./users/alice/home.nix;
           }
         ];
@@ -54,6 +58,8 @@
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "bak";
+            home-manager.backupCommand = "rm";
             home-manager.users.alice = import ./users/alice/home.nix;
             home-manager.users.bob = import ./users/bob/home.nix;
             home-manager.users.andy = import ./users/andy/home.nix;
