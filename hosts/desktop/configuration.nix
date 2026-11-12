@@ -19,5 +19,11 @@
     description = "Bob Dev";
     extraGroups = [ "wheel" "networkmanager" ];
   };
+
+  users.users.andy = {
+    isNormalUser = true;
+    description = "Andy";
+    extraGroups = [ "wheel" "networkmanager" ];
+  };
 }
 

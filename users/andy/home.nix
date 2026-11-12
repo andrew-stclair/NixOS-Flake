@@ -42,25 +42,25 @@
     };
   };
 
-  programs.plasma = {
+  qt = {
     enable = true;
-    configFile = {
-      "kdeglobals" = {
-        "General" = {
-          "ColorScheme" = "BreezeDark";
-        };
-      };
-      "plasmarc" = {
-        "Theme" = {
-          "name" = "breeze-dark";
-        };
-      };
-      "kscreenlockerrc" = {
-        "Greeter" = {
-          "Theme" = "org.kde.breezedark.desktop";
-        };
-      };
-    };
+    platformTheme.name = "kvantum";
+    style.name = "kvantum";
+  };
+
+  xdg.configFile = {
+    "kdeglobals".text = ''
+      [General]
+      ColorScheme=BreezeDark
+    '';
+    "plasmarc".text = ''
+      [Theme]
+      name=breeze-dark
+    '';
+    "kscreenlockerrc".text = ''
+      [Greeter]
+      Theme=org.kde.breezedark.desktop
+    '';
   };
 
   home.activation = {
