@@ -49,7 +49,7 @@
         modules = [
           ./hosts/test-vm/configuration.nix
           ./modules/core/default.nix
-          ./modules/groups/headless.nix
+          ./modules/groups/graphical.nix
           
           home-manager.nixosModules.home-manager {
             home-manager.useGlobalPkgs = true;
