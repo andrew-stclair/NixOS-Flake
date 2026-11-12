@@ -43,6 +43,23 @@
           }
         ];
       };
+
+      test-vm = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./hosts/test-vm/configuration.nix
+          ./modules/core/default.nix
+          ./modules/groups/headless.nix
+          
+          home-manager.nixosModules.home-manager {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.alice = import ./users/alice/home.nix;
+            home-manager.users.bob = import ./users/bob/home.nix;
+            home-manager.users.andy = import ./users/andy/home.nix;
+          }
+        ];
+      };
       
     };
   };
