@@ -3,7 +3,8 @@
 {
   # Sound & Display Server Essentials
   services.xserver.enable = true;
-  services.displayManager.ly.enable = true; # Lightweight display manager
+  services.displayManager.sddm.enable = true; # SDDM display manager for Plasma
+  services.displayManager.sddm.theme = "plasmaShell";
   services.desktopManager.plasma6.enable = true; # KDE Plasma 6 environment
 
   # Configure keymap in X11

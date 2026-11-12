@@ -30,5 +30,23 @@
     };
   };
 
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Breeze-Dark";
+      package = pkgs.breeze-gtk;
+    };
+    iconTheme = {
+      name = "breeze-dark";
+      package = pkgs.breeze-icons;
+    };
+  };
+
+  qt = {
+    enable = true;
+    platformTheme.name = "kvantum";
+    style.name = "breeze";
+  };
+
   home.stateVersion = "24.11";
 }
