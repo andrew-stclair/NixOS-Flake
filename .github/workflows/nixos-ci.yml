@@ -7,31 +7,8 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  get-configurations:
-    runs-on: ubuntu-latest
-    outputs:
-      configurations: ${{ steps.get-configs.outputs.configurations }}
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Install Nix
-      uses: cachix/install-nix-action@v25
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-
-    - name: Get Configuration Names
-      id: get-configs
-      run: |
-        CONFIGS=$(nix eval --json '.#nixosConfigurations' | jq -r 'keys | .[]' | jq -Rs 'split("\n")[:-1] | join(",")')
-        echo "configurations=$CONFIGS" >> "$GITHUB_OUTPUT"
-
   evaluate-flake:
-    needs: get-configurations
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        config: ${{ fromJson(format('[{0}]', needs.get-configurations.outputs.configurations)) }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -44,7 +21,10 @@ jobs:
     - name: Run Flake Check
       run: nix flake check
 
-    - name: dry-run Evaluation - ${{ matrix.config }}
+    - name: Evaluate All Configurations
       run: |
-        nix eval ".#nixosConfigurations.${{ matrix.config }}.config.system.build.toplevel.drvPath"
+        nix eval --json '.#nixosConfigurations' | jq -r 'keys[]' | while read config; do
+          echo "Evaluating configuration: $config"
+          nix eval ".#nixosConfigurations.$config.config.system.build.toplevel.drvPath"
+        done
 
