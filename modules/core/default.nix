@@ -45,6 +45,41 @@
     wget
     htop
     tmux
+    (writeShellScriptBin "nixos-update" ''
+      # System-wide NixOS update script
+      # Updates the system, cleans up old generations, and removes unused store files
+
+      set -euo pipefail
+
+      # Get the hostname
+      HOSTNAME=$(hostname)
+
+      echo "🔄 Updating NixOS system (''${HOSTNAME})..."
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      # Run nixos-rebuild with the hostname-specific flake configuration
+      sudo nixos-rebuild switch \
+        --flake "github:andrew-stclair/NixOS-Flake#''${HOSTNAME}" \
+        --refresh
+
+      echo ""
+      echo "✅ System update completed!"
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo ""
+
+      # Remove old generations, keeping only the 3 most recent
+      echo "🧹 Cleaning up old generations (keeping 3 most recent)..."
+      sudo nix-env --profile /nix/var/nix/profiles/system \
+        --delete-generations +3
+
+      echo ""
+      echo "🗑️  Removing unused store files..."
+      sudo nix store gc
+
+      echo ""
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      echo "✨ System update and cleanup complete!"
+    '')
   ];
 
   # Security core
