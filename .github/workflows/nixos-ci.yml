@@ -9,6 +9,8 @@ on:
 jobs:
   evaluate-flake:
     runs-on: ubuntu-latest
+    matrix:
+      config: [ "desktop", "server", "test-vm" ]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -22,9 +24,6 @@ jobs:
       run: nix flake check
 
     - name: Evaluate All Configurations
-      run: |
-        nix eval --json '.#nixosConfigurations' | jq -r 'keys[]' | while read config; do
-          echo "Evaluating configuration: $config"
-          nix eval ".#nixosConfigurations.$config.config.system.build.toplevel.drvPath"
-        done
+      run: 
+        nix eval ".#nixosConfigurations.${{ matrix.config }}.config.system.build.toplevel.drvPath"
 
