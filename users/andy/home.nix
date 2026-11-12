@@ -42,10 +42,25 @@
     };
   };
 
-  qt = {
+  programs.plasma = {
     enable = true;
-    platformTheme.name = "kvantum";
-    style.name = "kvantum";
+    configFile = {
+      "kdeglobals" = {
+        "General" = {
+          "ColorScheme" = "BreezeDark";
+        };
+      };
+      "plasmarc" = {
+        "Theme" = {
+          "name" = "breeze-dark";
+        };
+      };
+      "kscreenlockerrc" = {
+        "Greeter" = {
+          "Theme" = "org.kde.breezedark.desktop";
+        };
+      };
+    };
   };
 
   home.activation = {
