@@ -7,7 +7,24 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  evaluate-flake:
+  check-flake:
+    name: "Check Flake"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v25
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+
+    - name: Run Flake Check
+      run: nix flake check
+
+  evaluate-configuration:
+    name: "Evaluate NixOS Configuration"
+    needs: check-flake
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,9 +37,6 @@ jobs:
       uses: cachix/install-nix-action@v25
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-
-    - name: Run Flake Check
-      run: nix flake check
 
     - name: Evaluate All Configurations
       run: 
