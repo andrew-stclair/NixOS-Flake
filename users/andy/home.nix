@@ -48,5 +48,14 @@
     style.name = "kvantum";
   };
 
+  home.activation = {
+    removeConflictingFiles = ''
+      rm -f $HOME/.gtkrc-2.0
+      rm -f $HOME/.config/gtk-3.0/settings.ini
+      rm -f $HOME/.config/gtk-4.0/settings.ini
+      rm -f $HOME/.config/Trolltech.conf
+    '';
+  };
+
   home.stateVersion = "26.05";
 }
