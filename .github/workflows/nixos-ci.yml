@@ -9,8 +9,9 @@ on:
 jobs:
   evaluate-flake:
     runs-on: ubuntu-latest
-    matrix:
-      config: [ "desktop", "server", "test-vm" ]
+    strategy:
+      matrix:
+        config: [ "desktop", "server", "test-vm" ]
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
