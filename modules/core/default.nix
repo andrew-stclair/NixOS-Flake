@@ -22,6 +22,6 @@
   # Security core
   security.sudo.wheelNeedsPassword = true;
   
-  system.stateVersion = "24.11"; # Match target stable/unstable epoch
+  system.stateVersion = "26.05";
 }
 
